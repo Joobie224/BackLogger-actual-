@@ -28,6 +28,8 @@ import Listt from "@editorjs/list";
 import Checklist from "@editorjs/checklist";
 import SimpleImage from "@editorjs/simple-image";
 
+const baseURL = import.meta.env.VITE_BACKEND_URL;
+
 const editorInstances = {};
 
 const MyEditor = ({ gameId }) => {
@@ -72,9 +74,7 @@ const MyEditor = ({ gameId }) => {
 
   const fetchNoteData = async (gameId) => {
     try {
-      const response = await axios.get(
-        `http://localhost:3000/games/${gameId}/notes`
-      );
+      const response = await axios.get(`${baseURL}/games/${gameId}/notes`);
       const data = response.data;
       if (data && data.length > 0) {
         setNoteContent(data[0].content);
@@ -119,7 +119,7 @@ const saveData = async (gameId) => {
     const outputData = await editor.save();
     console.log("editor data:", outputData);
 
-    await axios.post(`http://localhost:3000/games/${gameId}/notes`, {
+    await axios.post(`${baseURL}/games/${gameId}/notes`, {
       content: outputData,
     });
 
@@ -134,7 +134,7 @@ const Favorites = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3000/games/favorites")
+      .get(`${baseURL}/games/favorites`)
       .then((response) => setFavorites(response.data))
       .catch((error) => console.error("error fetching favorites", error));
   }, []);
@@ -143,9 +143,7 @@ const Favorites = () => {
     console.log("deleting game with ID:", gameId);
 
     try {
-      const response = await axios.delete(
-        `http://localhost:3000/games/${gameId}`
-      );
+      const response = await axios.delete(`${baseURL}/games/${gameId}`);
       console.log("game deleted successfully", response.data);
       setGames((prev) => prev.filter((game) => game.id !== gameId));
     } catch (error) {
@@ -155,16 +153,14 @@ const Favorites = () => {
 
   const toggleFavorite = async (gameId) => {
     try {
-      const { data } = await axios.patch(
-        `http://localhost:3000/games/${gameId}/favorite`
-      );
+      const { data } = await axios.patch(`${baseURL}/games/${gameId}/favorite`);
 
       if (!data.favorite) {
         setFavorites((prevFavorites) =>
           prevFavorites.filter((game) => game.id !== gameId)
         );
 
-        window.dispatchEvent(new Event("gameslisthshouldrefresh"));
+        window.dispatchEvent(new Event("gameslistshouldrefresh"));
       } else {
         setFavorites((prevFavorites) =>
           prevFavorites.map((game) =>
@@ -184,95 +180,93 @@ const Favorites = () => {
       </h2>
       <ul>
         {favorites.map((game) => (
-          <>
-            <List>
-              <ListItem key={game.id}>
-                <Accordion
-                  sx={{
-                    width: "100%",
-                    bgcolor: "#F5F5F5",
-                    borderRadius: "30px",
-                    boxShadow: "0 0 2px 0 rgba(0, 0, 0, 0.2)",
-                  }}
-                >
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Box
+          <List key={game.id}>
+            <ListItem>
+              <Accordion
+                sx={{
+                  width: "100%",
+                  bgcolor: "#F5F5F5",
+                  borderRadius: "30px",
+                  boxShadow: "0 0 2px 0 rgba(0, 0, 0, 0.2)",
+                }}
+              >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      width: "100%",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Typography
                       sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        width: "100%",
-                        alignItems: "center",
+                        fontFamily: "Pixelify Sans",
+                        fontSize: "20px",
                       }}
                     >
-                      <Typography
-                        sx={{
-                          fontFamily: "Pixelify Sans",
-                          fontSize: "20px",
-                        }}
-                      >
-                        {game.title}
-                      </Typography>
-                    </Box>
-                  </AccordionSummary>
-                  <AccordionDetails className="w-full p-0">
-                    <MyEditor className="w-full" gameId={game.id} />
-                    <Box
+                      {game.title}
+                    </Typography>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails className="w-full p-0">
+                  <MyEditor className="w-full" gameId={game.id} />
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      mt: 2,
+                    }}
+                  >
+                    <Button
                       sx={{
                         display: "flex",
-                        justifyContent: "flex-end",
-                        mt: 2,
+                        alignContent: "center",
+                        width: "auto",
+                        backgroundColor: "#27272A",
+                        borderRadius: "10px",
+                        fontFamily: "Pixelify Sans",
+                        color: "white",
                       }}
+                      onClick={() => Delete(game.id)}
                     >
-                      <Button
-                        sx={{
-                          display: "flex",
-                          alignContent: "center",
-                          width: "auto",
-                          backgroundColor: "#27272A",
-                          borderRadius: "10px",
-                          fontFamily: "Pixelify Sans",
-                          color: "white",
-                        }}
-                        onClick={() => Delete(game.id)}
-                      >
-                        Delete
-                      </Button>
-                      <Button
-                        sx={{
-                          display: "flex",
-                          alignContent: "center",
-                          width: "auto",
-                          backgroundColor: "#27272A",
-                          borderRadius: "10px",
-                          fontFamily: "Pixelify Sans",
-                          color: "white",
-                          ml: "1rem",
-                        }}
-                        onClick={() => toggleFavorite(game.id)}
-                      >
-                        {game.favorite ? "Unfavorite" : "Favorite"}
-                      </Button>
-                      <Button
-                        sx={{
-                          display: "flex",
-                          alignContent: "center",
-                          width: "auto",
-                          backgroundColor: "#27272A",
-                          borderRadius: "10px",
-                          fontFamily: "Pixelify Sans",
-                          color: "white",
-                          ml: "1rem",
-                        }}
-                        onClick={() => saveData(game.id)}
-                      >
-                        Save
-                      </Button>
-                    </Box>
-                  </AccordionDetails>
-                </Accordion>
-              </ListItem>
-            </List>
-          </>
+                      Delete
+                    </Button>
+                    <Button
+                      sx={{
+                        display: "flex",
+                        alignContent: "center",
+                        width: "auto",
+                        backgroundColor: "#27272A",
+                        borderRadius: "10px",
+                        fontFamily: "Pixelify Sans",
+                        color: "white",
+                        ml: "1rem",
+                      }}
+                      onClick={() => toggleFavorite(game.id)}
+                    >
+                      {game.favorite ? "Unfavorite" : "Favorite"}
+                    </Button>
+                    <Button
+                      sx={{
+                        display: "flex",
+                        alignContent: "center",
+                        width: "auto",
+                        backgroundColor: "#27272A",
+                        borderRadius: "10px",
+                        fontFamily: "Pixelify Sans",
+                        color: "white",
+                        ml: "1rem",
+                      }}
+                      onClick={() => saveData(game.id)}
+                    >
+                      Save
+                    </Button>
+                  </Box>
+                </AccordionDetails>
+              </Accordion>
+            </ListItem>
+          </List>
         ))}
       </ul>
     </div>

@@ -28,6 +28,8 @@ import Listt from "@editorjs/list";
 import Checklist from "@editorjs/checklist";
 import SimpleImage from "@editorjs/simple-image";
 
+const baseURL = import.meta.env.VITE_BACKEND_URL;
+
 const CreateGames = ({ games, setGames }) => {
   const [open, setOpen] = useState(false);
   const [gameName, setGameName] = useState("");
@@ -79,9 +81,7 @@ const CreateGames = ({ games, setGames }) => {
 
     const fetchNoteData = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:3000/games/${gameId}/notes`
-        );
+        const response = await fetch(`${baseURL}/games/${gameId}/notes`);
         const data = await response.json();
         if (data && data.length > 0) {
           setNoteContent(data[0].content);
@@ -127,16 +127,13 @@ const CreateGames = ({ games, setGames }) => {
     try {
       const savedData = await editor.save();
 
-      const response = await fetch(
-        `http://localhost:3000/games/${gameId}/notes`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ content: savedData }),
-        }
-      );
+      const response = await fetch(`${baseURL}/games/${gameId}/notes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content: savedData }),
+      });
 
       if (!response.ok) {
         throw new Error(`failed to save note, status code: ${response.status}`);
@@ -157,7 +154,7 @@ const CreateGames = ({ games, setGames }) => {
 
   const Submit = async () => {
     try {
-      const { data } = await axios.post("http://localhost:3000/games", {
+      const { data } = await axios.post(`${baseURL}/games`, {
         title: gameName,
       });
 
@@ -172,9 +169,7 @@ const CreateGames = ({ games, setGames }) => {
     console.log("deleting game with ID:", gameId);
 
     try {
-      const response = await axios.delete(
-        `http://localhost:3000/games/${gameId}`
-      );
+      const response = await axios.delete(`${baseURL}/games/${gameId}`);
       console.log("game deleted successfully", response.data);
       setGames((prev) => prev.filter((game) => game.id !== gameId));
     } catch (error) {
@@ -184,9 +179,7 @@ const CreateGames = ({ games, setGames }) => {
 
   const toggleFavorite = async (gameId) => {
     try {
-      const { data } = await axios.patch(
-        `http://localhost:3000/games/${gameId}/favorite`
-      );
+      const { data } = await axios.patch(`${baseURL}/games/${gameId}/favorite`);
 
       setGames((prevGames) =>
         prevGames.map((game) =>
@@ -201,7 +194,7 @@ const CreateGames = ({ games, setGames }) => {
   useEffect(() => {
     const handleRefresh = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/games");
+        const response = await axios.get(`${baseURL}/games`);
         setGames(response.data);
       } catch (error) {
         console.error(error);

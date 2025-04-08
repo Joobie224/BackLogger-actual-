@@ -7,13 +7,15 @@ import CreateGames from "../components/CreateGames.jsx";
 import Favorites from "../components/Favorites.jsx";
 import NavBar from "../components/NavBar.jsx";
 
+const baseURL = import.meta.env.VITE_BACKEND_URL;
+
 function App() {
   const [games, setGames] = useState([]);
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     const getData = async () => {
-      const response = await fetch("http://localhost:3000/games");
+      const response = await fetch(`${baseURL}/games`);
       const data = await response.json();
 
       setGames(data);
