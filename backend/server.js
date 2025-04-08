@@ -4,7 +4,9 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient();
 const cors = require("cors");
 
-app.use(cors());
+app.use(cors({
+    origin: "https://backlogger.onrender.com"
+}));
 app.use(express.json({ limit: '300mb' }));
 app.use(express.urlencoded({ limit: '300mb', extended: true }))
 
